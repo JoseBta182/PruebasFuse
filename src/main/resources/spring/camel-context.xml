@@ -1,25 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring       http://camel.apache.org/schema/spring/camel-spring.xsd">
-    <bean class="org.slf4j.LoggerFactory" factory-method="getLogger" id="rh1">
-        <constructor-arg index="0" value="rh1"/>
-    </bean>
-    
-    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
-        <!-- Main route -->
-        <route id="generate-order-route">
-           
-            <from id="route-timer" uri="file://Prueba?noop=true"/>
-            <log id="_log1" loggerRef="rh1" loggingLevel="ERROR" message="Log slf4j::::::::${body}"/>
-       		<setProperty propertyName="titulo"><jsonpath>$.book.title</jsonpath> </setProperty>
- 			<setProperty propertyName="precio"><jsonpath>$.book.price</jsonpath> </setProperty>
- 	
-       		 	<log id= "log1" loggerRef="rh1" loggingLevel="ERROR" message="El titulo del libro es::::::${property.titulo} y el precio del libro es::::::${property.precio} "/>
-       		<log message="!!!!!!!!!!!!!!!!!!!!   Las propiedades del archivo son: ${headers}"> </log>
-       		
-       		<to uri= "file:out"> </to>
-       		
-       		<stop/>
-        </route>
-    </camelContext>
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+																			  http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+	<bean class="org.slf4j.LoggerFactory" factory-method="getLogger" id="rh1">
+		<constructor-arg index="0" value="rh1" />
+	</bean>
+	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+		<!-- Main route -->
+		<route>
+			<from uri="file://Prueba" />
+			<choice>
+				<when>
+					<simple>${header.CamelFileName} ends with '.xml'</simple>
+					<to uri="file://Prueba//Folderxml" />
+					<log id="este log pinta el cuerpo del XML" loggerRef="rh1" loggingLevel="ERROR" message="Carpeta XML::::::::${body}"/>
+				</when>
+				<when>
+					<simple>${header.CamelFileName} ends with '.csv'</simple>
+					<to uri="file://Prueba//Foldercsv" />
+				</when>
+				<when>
+					<simple>${header.CamelFileName} ends with '.csl'</simple>
+					<to uri="file://Prueba//Foldercsl" />
+				</when>
+				<otherwise>
+					<to uri="file://Prueba//Folderbad" />
+					<stop />
+				</otherwise>
+			</choice>
+		</route>
+	</camelContext>
 </beans>
