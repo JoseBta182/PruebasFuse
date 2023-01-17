@@ -3,29 +3,22 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 																			  http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 	<bean class="org.slf4j.LoggerFactory" factory-method="getLogger" id="rh1">
-		<constructor-arg index="0" value="rh1" />
+		<constructor-arg index="0" value="rh1"/>
 	</bean>
 	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
 		<!-- Main route -->
 		<route>
-			<from uri="file://Prueba" />
+			<from uri="file://Prueba"/>
+			<setProperty propertyName="precio"><xpath resultType="String">//book/price</xpath></setProperty>
 			<choice>
 				<when>
-					<simple>${header.CamelFileName} ends with '.xml'</simple>
-					<to uri="file://Prueba//Folderxml" />
-					<log id="este log pinta el cuerpo del XML" loggerRef="rh1" loggingLevel="ERROR" message="Carpeta XML::::::::${body}"/>
-				</when>
-				<when>
-					<simple>${header.CamelFileName} ends with '.csv'</simple>
-					<to uri="file://Prueba//Foldercsv" />
-				</when>
-				<when>
-					<simple>${header.CamelFileName} ends with '.csl'</simple>
-					<to uri="file://Prueba//Foldercsl" />
+					<simple>${property.precio} > 20</simple>
+					<to uri="file://out"/>
+<!--					<log id="este log pinta el cuerpo del XML" loggerRef="rh1" loggingLevel="ERROR" message="Carpeta XML::::::::${body}"/>-->
 				</when>
 				<otherwise>
-					<to uri="file://Prueba//Folderbad" />
-					<stop />
+					<to uri="file://Prueba//Folderxml"/>
+					<stop/>
 				</otherwise>
 			</choice>
 		</route>
